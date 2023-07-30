@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-repo-clone
+  namespace: tekton-pipelines
+  annotations:
+    tekton.kreutzer.io/type: builtin
+spec:
+  description: Git clone the given repo.
+  params:
+    - name: url
+      type: string
+      description: Git repo URL, either HTTPS or SSH protocol
+    - name: revision
+      type: string
+      default: main
+      description: Git clone revision
+  steps:
+    - name: git-repo-clone
+      image: bitnami/git:2
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        mkdir -p /workspace/project
+        cd /workspace/project && pwd || exit 1
+        git clone -n $(params.url) .
+        git checkout $(params.revision)
+      timeout: 30s

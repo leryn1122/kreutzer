@@ -5,7 +5,7 @@ VERSION := 0.1.0
 
 # Main
 BINARY_NAME := kreutzer
-MAIN := ./cmd/main.go
+MAIN := ./cmd/kreutzer/main.go
 
 # Toolchain
 GO := GO111MODULE=on GOPROXY=https://goproxy.cn,direct go

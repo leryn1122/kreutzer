@@ -1,10 +1,11 @@
 package vo
 
-import "helm.sh/helm/v3/pkg/time"
+import "time"
 
 type Repo struct {
-	Name string `json:"name"`
-	URL  string `json:"URL"`
+	Name         string    `json:"name"`
+	URL          string    `json:"URL"`
+	LastSyncTime time.Time `json:"lastSyncTime"`
 }
 
 type Chart struct {

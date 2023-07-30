@@ -6,24 +6,30 @@ import (
 )
 
 func RegisterRoutes(route *gin.Engine) {
+	registerRoutesWithHelm(route)
+	registerRoutesWithDeploy(route)
+}
 
-	envs := route.Group("/envs")
+func registerRoutesWithHelm(route *gin.Engine) {
+	subroute := route.Group("/helm")
+
+	envs := subroute.Group("/env")
 	{
 		// helm env
 		envs.GET("", api.HelmController{}.GetEnvs)
 	}
 
-	repos := route.Group("/repo")
+	repos := subroute.Group("/repo")
 	{
 		// helm repo list
-		repos.GET("/list", api.HelmController{}.ListRepo)
+		repos.GET("/list", api.HelmController{}.ListRepos)
 		// helm search repo
 		repos.GET("/:repo/charts", api.HelmController{}.ListCharts)
 		// helm repo update
 		repos.PUT("/:repo/update", api.HelmController{}.UpdateRepo)
 	}
 
-	charts := route.Group("/charts")
+	charts := subroute.Group("/charts")
 	{
 		// helm show
 		charts.GET("", api.HelmController{}.ShowChartInfo)
@@ -33,26 +39,31 @@ func RegisterRoutes(route *gin.Engine) {
 		//charts.GET("")
 	}
 
-	releases := route.Group("/namespaces/:namespace/releases")
+	releases := subroute.Group("/namespaces/:namespace/releases")
 	{
 		// helm list
 		releases.GET("/list", api.HelmController{}.ListReleases)
 		// helm show
 		releases.GET("/:release", api.HelmController{}.ShowReleaseInfo)
 		// helm install
-		releases.POST("/:release")
+		releases.POST("/:release", dummy)
 		// helm upgrade
-		releases.PUT("/:release")
+		releases.PUT("/:release", dummy)
 		// helm uninstall
-		releases.DELETE("/:release")
+		releases.DELETE("/:release", dummy)
 		// helm rollback
-		releases.PUT("/:release/versions/:revision")
+		releases.PUT("/:release/versions/:revision", dummy)
 		// helm status
 		releases.GET("/:release/status", api.HelmController{}.GetReleaseStatus)
 		// helm release history
 		releases.GET("/:release/histories", api.HelmController{}.ListReleaseHistories)
 	}
+}
 
+func registerRoutesWithDeploy(route *gin.Engine) {
+	subroute := route.Group("/deploy")
+	subroute.GET("/env/list", api.DeployController{}.ListEnvInfo)
+	subroute.POST("/env/create", api.DeployController{}.CreateEnvInfo)
 }
 
 func dummy(ctx *gin.Context) {

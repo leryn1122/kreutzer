@@ -1,0 +1,44 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: image-build-push
+  namespace: tekton-pipelines
+  annotations:
+    tekton.kreutzer.io/type: builtin
+spec:
+  description: |
+    Build an target image and push to the image registry.
+    It is implemented by kaniko in current version instead of docker-in-docker.
+  params:
+    - name: image
+      type: string
+      description: Full qualified image name, e.g. `docker.io/busybox:latest`
+    - name: pathToDockerfile
+      type: string
+      default: Dockerfile
+      description: Path to the dockerfile to build
+    - name: pathToContext
+      type: string
+      default: .
+      description: Path to the image build context
+  steps:
+    - name: kaniko-build-push
+      image: registry.aliyuncs.com/kaniko-project/executor:latest
+      args:
+        - "--force"
+        - "--dockerfile=/workspace/project/$(params.pathToDockerfile)"
+        - "--context=/workspace/project/$(params.pathToContext)"
+        - "--destination=$(params.image)"
+      env:
+        - name: DOCKER_CONFIG
+          value: /kaniko/.docker
+      volumeMounts:
+        - name: kaniko-registry
+          mountPath: /kaniko/.docker
+  volumes:
+    - name: kaniko-registry
+      secret:
+        secretName: kaniko-registry
+        items:
+          - key: .dockerconfigjson
+            path: config.json

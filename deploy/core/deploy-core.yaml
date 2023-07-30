@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kreutzer-core
+  namespace: kreutzer
+  annotations: { }
+  labels:
+    "app.kubernetes.io/name": kreutzer
+    "app.kubernetes.io/component": core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      "app.kubernetes.io/name": kreutzer
+      "app.kubernetes.io/component": core
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        "app.kubernetes.io/name": kreutzer
+        "app.kubernetes.io/component": core
+    spec:
+      serviceAccountName: kreutzer
+      containers:
+        - name: core
+          image: harbor.leryn.top/library/kreutzer-core:0.1.0
+          command:
+            - /opt/kreutzer
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8081
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: kreutzer-database
+          resources: { }
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /healthz
+          securityContext:
+            runAsUser: 0
+            privileged: true
+          volumeMounts:
+            - name: core-config
+              mountPath: /opt/conf/config.toml
+              subPath: config.toml
+      volumes:
+        - name: core-config
+          configMap:
+            name: kreutzer-core
+            defaultMode: 420

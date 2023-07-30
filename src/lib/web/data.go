@@ -41,7 +41,9 @@ func OnSuccess(ctx *gin.Context, data interface{}, opts ...Option) {
 	}
 
 	for _, opt := range opts {
-		opt(ctx, result)
+		if opt != nil {
+			opt(ctx, result)
+		}
 	}
 	ctx.JSON(http.StatusOK, result)
 }
