@@ -9,12 +9,15 @@ import (
 	"time"
 )
 
+//goland:noinspection GoNameStartsWithPackageName
 var DBClient DBClientType
 
+//goland:noinspection GoNameStartsWithPackageName
 type DBClientType struct {
 	*gorm.DB
 }
 
+//goland:noinspection SpellCheckingInspection
 type Config struct {
 	Host            string
 	Port            int

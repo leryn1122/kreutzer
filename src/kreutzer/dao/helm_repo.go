@@ -7,13 +7,13 @@ type HelmRepo struct {
 	Name                  string    `gorm:"column:name"`
 	URL                   string    `gorm:"column:url"`
 	LastSyncTime          time.Time `gorm:"column:last_sync_time"`
-	Username              string    `gorm:"username"`
-	Password              string    `gorm:"password"`
-	PassCredentialsAll    bool      `gorm:"pass_credentials_all"`
-	InsecureSkipTLSVerify bool      `gorm:"insecure_skip_tls_verify"`
-	CertFile              string    `gorm:"cert_file"`
-	KeyFile               string    `gorm:"key_file"`
-	CAFile                string    `gorm:"ca_file"`
+	Username              string    `gorm:"column:username"`
+	Password              string    `gorm:"column:password"`
+	PassCredentialsAll    bool      `gorm:"column:pass_credentials_all"`
+	InsecureSkipTLSVerify bool      `gorm:"column:insecure_skip_tls_verify"`
+	CertFile              string    `gorm:"column:cert_file"`
+	KeyFile               string    `gorm:"column:key_file"`
+	CAFile                string    `gorm:"column:ca_file"`
 }
 
 func (HelmRepo) TableName() string {

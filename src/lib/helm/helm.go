@@ -194,7 +194,7 @@ func (c *Client) ListRepos() ([]*Repo, error) {
 	var repos []dao.HelmRepo
 	tx := db.DBClient.Find(&repos)
 	if err := tx.Error; err != nil {
-		return nil, tx.Error
+		return nil, err
 	}
 	var repos_ []*Repo
 	for _, repo_ := range repos {

@@ -24,9 +24,12 @@ spec:
       serviceAccountName: kreutzer
       containers:
         - name: core
-          image: harbor.leryn.top/library/kreutzer-core:0.1.0
+          image: harbor.leryn.top/library/kreutzer-core:debug
+          workingDir: /opt
           command:
-            - /opt/kreutzer
+            - /bin/sh
+          args:
+            - entrypoint.sh
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -50,8 +53,14 @@ spec:
             - name: core-config
               mountPath: /opt/conf/config.toml
               subPath: config.toml
+            - name: target-volume
+              mountPath: /opt/target/kreutzer
+              subPath: kreutzer
       volumes:
         - name: core-config
           configMap:
             name: kreutzer-core
             defaultMode: 420
+        - name: target-volume
+          hostPath:
+            path: /opt/project/kreutzer-v2/src/target

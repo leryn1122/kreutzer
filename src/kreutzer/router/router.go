@@ -8,18 +8,20 @@ import (
 func RegisterRoutes(route *gin.Engine) {
 	registerRoutesWithHelm(route)
 	registerRoutesWithDeploy(route)
+	registerRoutesWithWebhook(route)
+	registerRoutesWithKube(route)
 }
 
 func registerRoutesWithHelm(route *gin.Engine) {
-	subroute := route.Group("/helm")
+	subRoute := route.Group("/helm")
 
-	envs := subroute.Group("/env")
+	envs := subRoute.Group("/env")
 	{
 		// helm env
 		envs.GET("", api.HelmController{}.GetEnvs)
 	}
 
-	repos := subroute.Group("/repo")
+	repos := subRoute.Group("/repo")
 	{
 		// helm repo list
 		repos.GET("/list", api.HelmController{}.ListRepos)
@@ -29,17 +31,17 @@ func registerRoutesWithHelm(route *gin.Engine) {
 		repos.PUT("/:repo/update", api.HelmController{}.UpdateRepo)
 	}
 
-	charts := subroute.Group("/charts")
+	charts := subRoute.Group("/charts")
 	{
 		// helm show
 		charts.GET("", api.HelmController{}.ShowChartInfo)
-		////
+		//
 		//charts.GET("")
-		////
+		//
 		//charts.GET("")
 	}
 
-	releases := subroute.Group("/namespaces/:namespace/releases")
+	releases := subRoute.Group("/namespaces/:namespace/releases")
 	{
 		// helm list
 		releases.GET("/list", api.HelmController{}.ListReleases)
@@ -61,9 +63,18 @@ func registerRoutesWithHelm(route *gin.Engine) {
 }
 
 func registerRoutesWithDeploy(route *gin.Engine) {
-	subroute := route.Group("/deploy")
-	subroute.GET("/env/list", api.DeployController{}.ListEnvInfo)
-	subroute.POST("/env/create", api.DeployController{}.CreateEnvInfo)
+	subRoute := route.Group("/deploy")
+	subRoute.GET("/env/list", api.DeployController{}.ListEnvInfo)
+	subRoute.POST("/env/create", api.DeployController{}.CreateEnvInfo)
+}
+
+func registerRoutesWithWebhook(route *gin.Engine) {
+	route.POST("/webhooks", api.WebhookController{}.ReceiveWebhook)
+}
+
+func registerRoutesWithKube(route *gin.Engine) {
+	subRoute := route.Group("/kube")
+	subRoute.GET("/namespaces/:cluster", api.KubeController{}.ListNamespaces)
 }
 
 func dummy(ctx *gin.Context) {

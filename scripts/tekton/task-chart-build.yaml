@@ -9,35 +9,41 @@ spec:
   description: |
     Build an target helm chart and push to the chart registry.
   params:
-    - name: image
-      type: string
-      description: Full qualified image name, e.g. `docker.io/busybox:latest`
-    - name: pathToChart
-      type: string
-      default: Dockerfile
-      description: Path to the dockerfile to build
-    - name: pathToContext
-      type: string
-      default: .
-      description: Path to the image build context
+    - name: repo
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+      description: "Repo info"
+    - name: chartVersion
+      description: "Chart version"
   steps:
-    - name: kaniko-build-push
-      image: registry.aliyuncs.com/kaniko-project/executor:latest
-      args:
-        - "--force"
-        - "--dockerfile=/workspace/project/$(params.pathToDockerfile)"
-        - "--context=/workspace/project/$(params.pathToContext)"
-        - "--destination=$(params.image)"
-      env:
-        - name: DOCKER_CONFIG
-          value: /kaniko/.docker
-      volumeMounts:
-        - name: kaniko-registry
-          mountPath: /kaniko/.docker
-  volumes:
-    - name: kaniko-registry
-      secret:
-        secretName: kaniko-registry
-        items:
-          - key: .dockerconfigjson
-            path: config.json
+    - name: helm-chart-dependency-update
+      image: harbor.leryn.top/infra/helm:3.10.0
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        cd /workspace/project && pwd || exit 1
+        helm repo add $(params["repo.name"]) $(params["repo.url"]) \
+          --username=$(params["repo.username"]) --password=$(params["repo.password"]) --insecure
+    - name: helm-chart-dependency-update
+      image: harbor.leryn.top/infra/helm:3.10.0
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        cd /workspace/project && pwd || exit 1
+        helm repo update
+        helm dependency update
+        helm template demo . --debug -n demo-ns >/dev/null
+        helm package . --version $(params.chartVersion)
+        helm cm-push *.tgz $(params["repo.name"]) \
+          --username=$(params["repo.username"]) --password=$(params["repo.password"]) --insecure

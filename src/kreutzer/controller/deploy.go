@@ -46,7 +46,7 @@ func (c DeployController) ListEnvInfo(ctx *gin.Context) {
 }
 
 type CreateEnvRequest struct {
-	Name        string `json:"name" gorm:"column:name"`
-	Key         string `json:"key" gorm:"column:key"`
-	Description string `json:"description" gorm:"column:description"`
+	Name        string `json:"name"`
+	Key         string `json:"key"`
+	Description string `json:"description"`
 }
