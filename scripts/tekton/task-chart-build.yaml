@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: image-build-push
+  namespace: tekton-pipelines
+  annotations:
+    tekton.kreutzer.io/is-builtin: "true"
+spec:
+  description: |
+    Build an target helm chart and push to the chart registry.
+  params:
+    - name: repo
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+      description: "Repo info"
+    - name: chartVersion
+      description: "Chart version"
+  steps:
+    - name: helm-chart-dependency-update
+      image: harbor.leryn.top/infra/helm:3.10.0
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        cd /workspace/project && pwd || exit 1
+        helm repo add $(params["repo.name"]) $(params["repo.url"]) \
+          --username=$(params["repo.username"]) --password=$(params["repo.password"]) --insecure
+    - name: helm-chart-dependency-update
+      image: harbor.leryn.top/infra/helm:3.10.0
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        cd /workspace/project && pwd || exit 1
+        helm repo update
+        helm dependency update
+        helm template demo . --debug -n demo-ns >/dev/null
+        helm package . --version $(params.chartVersion)
+        helm cm-push *.tgz $(params["repo.name"]) \
+          --username=$(params["repo.username"]) --password=$(params["repo.password"]) --insecure

@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: image-build-service
+  namespace: tekton-pipelines
+  annotations:
+    tekton.kreutzer.io/type: builtin
+spec:
+  params:
+    - name: url
+      type: string
+      description: Git repo URL, either HTTPS or SSH protocol
+    - name: revision
+      type: string
+      default: main
+      description: Git clone revision
+
+    - name: image
+      type: string
+      description: Full qualified image name, e.g. `docker.io/busybox:latest`
+    - name: pathToDockerfile
+      type: string
+      default: Dockerfile
+      description: Path to the dockerfile to build
+    - name: pathToContext
+      type: string
+      default: .
+      description: Path to the image build context
+  workspaces:
+    - name: source
+  tasks:
+    - name: git-repo-clone
+      taskRef:
+        name: git-repo-clone
+      workspaces:
+        - name: source
+    - name: image-build-push
+      taskRef:
+        name: image-build-push
+      workspaces:
+        - name: source
+      runAfter:
+        - git-repo-clone

@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: image-build-service-with-parameters
+spec:
+  pipelineRef:
+    name: image-build-adapter
+  params:
+    - name: ""
+      value: ""

@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-repo-checkout
+  namespace: tekton-pipelines
+  annotations:
+    tekton.kreutzer.io/is-builtin: "true"
+    tekton.kreutzer.io/related-github-actions: "actions/checkout@v3"
+spec:
+  description: Git clone the given repo.
+  params:
+    - name: url
+      type: string
+      description: Git repo URL, either HTTPS or SSH protocol
+    - name: revision
+      type: string
+      default: main
+      description: Git clone revision
+  steps:
+    - name: git-repo-checkout
+      image: bitnami/git:2
+      script: |
+        #!/usr/bin/env bash
+
+        set -eu
+
+        mkdir -p /workspace/project
+        cd /workspace/project && pwd || exit 1
+        git clone -n $(params.url) . --branch $(params.revision) --depth 2
+      timeout: 30s
